@@ -1,8 +1,12 @@
 local status_ok, ts_utils = pcall(require, "nvim-treesitter.ts_utils")
 if not status_ok then
   return {
-    get_identifiers = function() return {} end,
-    get_original_component_node = function() return nil end
+    get_identifiers = function()
+      return {}
+    end,
+    get_original_component_node = function()
+      return nil
+    end,
   }
 end
 
@@ -40,7 +44,10 @@ local function find_jsx_element(node, strategy, original_start)
       -- continue with original node and different strategy
       return find_jsx_element(node, "next_sibling", original_start)
     end
-  elseif new_node:type() == "jsx_closing_element" and new_node:parent():type() == "jsx_element" then
+  elseif
+    new_node:type() == "jsx_closing_element"
+    and new_node:parent():type() == "jsx_element"
+  then
     return new_node:parent()
   else
     return find_jsx_element(new_node, "parent", original_start)
@@ -75,7 +82,7 @@ local function find_indentifiers_in_expressions(jsx_expressions)
     local row_positions = positions[row] or {}
     table.insert(row_positions, { row = row, col = col })
     positions[row] = row_positions
-    set[ts_utils.get_node_text(identifier, 0)[1]] = true
+    set[vim.treesitter.query.get_node_text(identifier, 0)] = true
   end
 
   local identifiers = {}
@@ -99,7 +106,9 @@ M.get_identifiers = function(start_row)
   end
 
   local jsx_expressions = find_children_by_type(jsx_element, "jsx_expression")
-  local identifiers, positions = find_indentifiers_in_expressions(jsx_expressions)
+  local identifiers, positions = find_indentifiers_in_expressions(
+    jsx_expressions
+  )
   table.sort(identifiers)
   return identifiers, positions
 end
